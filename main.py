@@ -1,52 +1,42 @@
+import logging
+import os
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from utils import check_all_pairs_and_send_signals, load_config, save_config
-import logging, threading
-from flask import Flask
+from flask import Flask, request
 
-# Flask health-check
 app_flask = Flask(__name__)
 
 @app_flask.route('/')
-def health():
-    return 'OK', 200
+def health_check():
+    return "Bot is running."
 
-def run_web():
-    app_flask.run(host='0.0.0.0', port=8000)
+@app_flask.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json(force=True)
+    if data:
+        application.update_queue.put_nowait(data)
+    return 'OK'
 
-web_thread = threading.Thread(target=run_web)
-web_thread.daemon = True
-web_thread.start()
-
-# Telegram bot
-logging.basicConfig(level=logging.INFO)
 config = load_config()
-
-async def start(update, context):
-    await update.message.reply_text("👋 Привіт! Це крипто-бот. Напиши /signal щоб отримати сигнали.")
-
-async def signal(update, context):
-    await update.message.reply_text("⏳ Аналізую ринок...")
-    await check_all_pairs_and_send_signals(context.bot, update.effective_chat.id)
-
-async def set_interval(update, context):
-    try:
-        minutes = int(context.args[0])
-        config['scan_interval_minutes'] = minutes
-        save_config(config)
-        await update.message.reply_text(f"✅ Інтервал встановлено: {minutes} хв.")
-    except:
-        await update.message.reply_text("❌ Невірний формат. Приклад: /set_interval 60")
-
-import os
-from telegram.ext import ApplicationBuilder, CommandHandler
+symbols = config["symbols"]
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
-app_bot = ApplicationBuilder().token(TOKEN).build()
-app_bot.add_handler(CommandHandler("start", start))
-app_bot.add_handler(CommandHandler("signal", signal))
-app_bot.add_handler(CommandHandler("set_interval", set_interval))
-app_bot.run_polling()
-app_bot.add_handler(CommandHandler("start", start))
-app_bot.add_handler(CommandHandler("signal", signal))
-app_bot.add_handler(CommandHandler("set_interval", set_interval))
-app_bot.run_polling()
+logging.basicConfig(level=logging.INFO)
+application = ApplicationBuilder().token(TOKEN).concurrent_updates(True).build()
+
+async def start(update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Привіт! Бот аналізує ринок...")
+    await check_all_pairs_and_send_signals(application, symbols)
+
+application.add_handler(CommandHandler("start", start))
+
+# Запуск бота через webhook
+async def run():
+    await application.initialize()
+    await application.start()
+    await application.bot.set_webhook(url=os.environ.get("WEBHOOK_URL"))
+    await application.updater.start_polling()
+    app_flask.run(host="0.0.0.0", port=10000)
+
+import asyncio
+asyncio.run(run())

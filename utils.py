@@ -1,30 +1,30 @@
-import requests, json
-from strategy import analyze_symbol
+import aiohttp
+import json
+import os
 
-def get_usdt_pairs():
-    r = requests.get('https://api.binance.com/api/v3/exchangeInfo').json()
-    return [s['symbol'] for s in r['symbols'] if s['quoteAsset'] in ['USDT', 'USDC']]
-
-async def check_all_pairs_and_send_signals(bot, chat_id):
-    pairs = get_usdt_pairs()
-    messages = []
-    for symbol in pairs[:50]:
-        try:
-            signal = analyze_symbol(symbol)
-            if signal:
-                messages.append(signal)
-        except:
-            continue
-    if not messages:
-        await bot.send_message(chat_id, "🔍 Немає актуальних сигналів.")
-    else:
-        for msg in messages:
-            await bot.send_message(chat_id, msg)
+CONFIG_FILE = "config.json"
 
 def load_config():
-    with open("config.json", "r") as f:
-        return json.load(f)
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    return {"symbols": ["BTCUSDT", "ETHUSDT", "PEPEUSDT", "SOLUSDT", "ADAUSDT", "XRPUSDT"]}
 
-def save_config(cfg):
-    with open("config.json", "w") as f:
-        json.dump(cfg, f)
+def save_config(config):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f)
+
+async def check_all_pairs_and_send_signals(app, symbols):
+    from telegram.constants import ParseMode
+    async with aiohttp.ClientSession() as session:
+        for symbol in symbols:
+            try:
+                url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
+                async with session.get(url) as response:
+                    data = await response.json()
+                    price = data["price"]
+                    msg = f"📊 {symbol} поточна ціна: {price}"
+                    for conv in app.chat_data.keys():
+                        await app.bot.send_message(chat_id=conv, text=msg, parse_mode=ParseMode.HTML)
+            except Exception as e:
+                print(f"❌ Помилка: {symbol} — {e}")
