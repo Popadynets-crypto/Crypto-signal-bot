@@ -1,10 +1,14 @@
-TELEGRAM_TOKEN = "7282256884:AAE7Gy77brpbxZqQJc6Bq_sOtVu28u_329E"
+# config.py
 
-SYMBOLS = [
-    'BTC', 'ETH', 'PEPE', 'DOGE', 'SOL', 'BNB'
-]
+# Telegram
+BOT_TOKEN = "встав_сюди_свій_токен"
 
-INTERVAL_MINUTES = 30  # Аналіз монет кожні 30 хвилин
+# Binance API (не обов'язково для простого аналізу, але потрібен для торгівлі)
+BINANCE_API_KEY = "встав_сюди_API_KEY"
+BINANCE_API_SECRET = "встав_сюди_API_SECRET"
 
-BINANCE_API_KEY = "tvSxvYElHJxUH5Z3S89wPriecY79PVpPjhO6xYRWt5RB7YIN16TevfESYOvyiC4s"
-BINANCE_API_SECRET = "S7vO1jJuX27NY0jWqn1TUWKR62dEzQ5hY1nlBPFeSDPac4chDfUIejGfrFO36kNE"
+# Монети для аналізу
+symbols = ["BTC", "ETH", "PEPE", "DOGE", "SOL", "ADA"]
+
+# Інтервал аналізу в хвилинах (для автозапуску)
+ANALYSIS_INTERVAL_MINUTES = 30
