@@ -1,42 +1,50 @@
+import json
 import logging
-import os
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler
 from utils import check_all_pairs_and_send_signals, load_config, save_config
-from flask import Flask, request
-
-app_flask = Flask(__name__)
-
-@app_flask.route('/')
-def health_check():
-    return "Bot is running."
-
-@app_flask.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.get_json(force=True)
-    if data:
-        application.update_queue.put_nowait(data)
-    return 'OK'
-
-config = load_config()
-symbols = config["symbols"]
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
 logging.basicConfig(level=logging.INFO)
-application = ApplicationBuilder().token(TOKEN).concurrent_updates(True).build()
+logger = logging.getLogger(__name__)
 
-async def start(update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("👋 Привіт! Бот аналізує ринок...")
-    await check_all_pairs_and_send_signals(application, symbols)
+config = load_config()
 
-application.add_handler(CommandHandler("start", start))
+def get_keyboard():
+    buttons = [[InlineKeyboardButton(symbol, callback_data=symbol)] for symbol in config['symbols']]
+    return InlineKeyboardMarkup(buttons)
 
-# Запуск бота через webhook
-async def run():
-    await application.initialize()
-    await application.start()
-    await application.bot.set_webhook(url=os.environ.get("WEBHOOK_URL"))
-    await application.updater.start_polling()
-    app_flask.run(host="0.0.0.0", port=10000)
+async def start(update: Update, context: CallbackContext.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Привіт! Це крипто-бот.
+Натисни кнопку, щоб отримати сигнал для обраної монети:",
+        reply_markup=get_keyboard()
+    )
 
-import asyncio
-asyncio.run(run())
+async def signal(update: Update, context: CallbackContext.DEFAULT_TYPE):
+    await update.message.reply_text("⏳ Аналізую всі пари...")
+    results = check_all_pairs_and_send_signals(config["symbols"])
+    if results:
+        await update.message.reply_text(results)
+    else:
+        await update.message.reply_text("⚠️ Сигналів не виявлено.")
+
+async def button_handler(update: Update, context: CallbackContext.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    symbol = query.data
+    await query.edit_message_text(text=f"⏳ Аналізую {symbol}...")
+    result = check_all_pairs_and_send_signals([symbol])
+    if result:
+        await query.message.reply_text(result)
+    else:
+        await query.message.reply_text("⚠️ Сигналів не виявлено.")
+
+def main():
+    application = Application.builder().token(config["token"]).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("signal", signal))
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
