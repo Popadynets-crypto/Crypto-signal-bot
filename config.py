@@ -14,5 +14,5 @@ symbols = ["BTC", "ETH", "PEPE", "DOGE", "SOL", "ADA"]
 
 Інтервал аналізу в хвилинах (для автозапуску)
 
-ANALYSIS_INTERVAL_MINUTES = 30
+ANALYSIS_INTERVAL_MINUTES = 15
 
