@@ -1,5 +1,3 @@
-config
-
 #Telegram
 
 BOT_TOKEN = "7282256884:AAE7Gy77brpbxZqQJc6Bq_sOtVu28u_329E"
