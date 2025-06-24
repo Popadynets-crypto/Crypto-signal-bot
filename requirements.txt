@@ -6,4 +6,5 @@ aiohttp
 pandas
 ta
 python-binance
-python-telegram-bot[job_queue]==20.8
+python-telegram-bot==20.8
+requests
