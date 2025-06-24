@@ -5,3 +5,4 @@ flask
 aiohttp
 pandas
 ta
+python-binance
