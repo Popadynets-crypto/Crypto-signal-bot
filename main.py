@@ -9,7 +9,7 @@ def get_keyboard():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "рџ‘‹ РџСЂРёРІС–С‚! Р¦Рµ РєСЂРёРїС‚Рѕ-Р±РѕС‚.\nРќР°С‚РёСЃРЅРё РєРЅРѕРїРєСѓ, С‰РѕР± РѕС‚СЂРёРјР°С‚Рё СЃРёРіРЅР°Р» РґР»СЏ РѕР±СЂР°РЅРѕС— РјРѕРЅРµС‚Рё:",
+        "Привіт! Я бот для аналізу монет. Обери монету:",
         reply_markup=get_keyboard()
     )
 
@@ -18,7 +18,7 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     symbol = query.data
     result = analyzer.analyze_symbol(symbol)
-    await query.edit_message_text(text=f"рџ“€ РЎРёРіРЅР°Р» РґР»СЏ {symbol}:\n{result}")
+    await query.edit_message_text(text=f"Результат для {symbol}:\n{result}")
 
 def main():
     app = ApplicationBuilder().token(config.BOT_TOKEN).build()
