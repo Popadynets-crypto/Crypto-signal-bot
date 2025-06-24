@@ -21,7 +21,7 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(text=f"рџ“€ РЎРёРіРЅР°Р» РґР»СЏ {symbol}:\n{result}")
 
 def main():
-    app = ApplicationBuilder().token(config.BOT_TOKEN).build
+    app = ApplicationBuilder().token(config.BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(signal))
     app.run_polling()
