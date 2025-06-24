@@ -1,49 +1,31 @@
-import json
-import logging
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler
-from utils import check_all_pairs_and_send_signals, load_config, save_config
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-config = load_config()
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+import config
+import analyzer
 
 def get_keyboard():
     buttons = [[InlineKeyboardButton(symbol, callback_data=symbol)] for symbol in config['symbols']]
     return InlineKeyboardMarkup(buttons)
 
-async def start(update: Update, context: CallbackContext.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-    "👋 Привіт! Це крипто-бот.\nНатисни кнопку, щоб отримати сигнал для обраної монети:",
-    reply_markup=get_keyboard()
-)
+        "рџ‘‹ РџСЂРёРІС–С‚! Р¦Рµ РєСЂРёРїС‚Рѕ-Р±РѕС‚.\nРќР°С‚РёСЃРЅРё РєРЅРѕРїРєСѓ, С‰РѕР± РѕС‚СЂРёРјР°С‚Рё СЃРёРіРЅР°Р» РґР»СЏ РѕР±СЂР°РЅРѕС— РјРѕРЅРµС‚Рё:",
+        reply_markup=get_keyboard()
+    )
 
-async def signal(update: Update, context: CallbackContext.DEFAULT_TYPE):
-    await update.message.reply_text("⏳ Аналізую всі пари...")
-    results = check_all_pairs_and_send_signals(config["symbols"])
-    if results:
-        await update.message.reply_text(results)
-    else:
-        await update.message.reply_text("⚠️ Сигналів не виявлено.")
-
-async def button_handler(update: Update, context: CallbackContext.DEFAULT_TYPE):
+async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     symbol = query.data
-    await query.edit_message_text(text=f"⏳ Аналізую {symbol}...")
-    result = check_all_pairs_and_send_signals([symbol])
-    if result:
-        await query.message.reply_text(result)
-    else:
-        await query.message.reply_text("⚠️ Сигналів не виявлено.")
+    result = analyzer.analyze_symbol(symbol)
+    await query.edit_message_text(text=f"рџ“€ РЎРёРіРЅР°Р» РґР»СЏ {symbol}:\n{result}")
 
 def main():
-    application = Application.builder().token(config["token"]).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("signal", signal))
-    application.add_handler(CallbackQueryHandler(button_handler))
-    application.run_polling()
+    app = ApplicationBuilder().token(config['bot_token']).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(signal))
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
