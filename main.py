@@ -5,7 +5,7 @@ import config
 import analyzer
 
 def get_keyboard():
-    buttons = [InlineKeyboardButton(symbol, callback_data=symbol)] for symbol in config.symbols:
+    buttons = [[InlineKeyboardButton(symbol, callback_data=symbol)] for symbol in config.symbols]
     return InlineKeyboardMarkup(buttons)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
