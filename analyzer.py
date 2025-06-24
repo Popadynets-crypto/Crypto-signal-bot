@@ -1,6 +1,12 @@
 import os
 import pandas as pd
 import ta
+import random
+
+def analyze_symbol(symbol):
+    # Тимчасова логіка — для тесту
+    signals = ["Buy", "Sell", "No signal"]
+    return random.choice(signals)
 from binance.client import Client
 
 def analyze_coin(symbol, interval='1h', limit=100):
