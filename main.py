@@ -37,7 +37,8 @@ async def set_interval(update, context):
     except:
         await update.message.reply_text("❌ Невірний формат. Приклад: /set_interval 60")
 
-app_bot = ApplicationBuilder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+app_bot = ApplicationBuilder().token("import os
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")").build()
 app_bot.add_handler(CommandHandler("start", start))
 app_bot.add_handler(CommandHandler("signal", signal))
 app_bot.add_handler(CommandHandler("set_interval", set_interval))
