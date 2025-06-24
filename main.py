@@ -15,10 +15,9 @@ def get_keyboard():
 
 async def start(update: Update, context: CallbackContext.DEFAULT_TYPE):
     await update.message.reply_text(
-        """👋 Привіт! Це крипто-бот.
-Натисни кнопку, щоб отримати сигнал для обраної монети:""",
-        reply_markup=get_keyboard()
-    )
+    "👋 Привіт! Це крипто-бот.\nНатисни кнопку, щоб отримати сигнал для обраної монети:",
+    reply_markup=get_keyboard()
+)
 
 async def signal(update: Update, context: CallbackContext.DEFAULT_TYPE):
     await update.message.reply_text("⏳ Аналізую всі пари...")
