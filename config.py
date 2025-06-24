@@ -14,3 +14,4 @@ symbols = ["BTC", "ETH", "PEPE", "DOGE", "SOL", "ADA"]
 #Інтервал аналізу в хвилинах (для автозапуску)
 
 ANALYSIS_INTERVAL_MINUTES = 15
+ALERT_CHAT_ID = 914674704  # ← твій справжній ID сюди
