@@ -11,16 +11,13 @@ import asyncio
 
 
 def get_keyboard():
-    buttons = [
-        [InlineKeyboardButton(symbol, callback_data=symbol)]
-        for symbol in config.symbols
-    ]
+    buttons = [[InlineKeyboardButton(symbol, callback_data=symbol)] for symbol in config.symbols]
     return InlineKeyboardMarkup(buttons)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Привіт! Я бот для аналізу монет. Обери монету для аналізу:",
+        "Привіт! Я бот для аналізу монет.\nОберіть монету:",
         reply_markup=get_keyboard()
     )
 
@@ -37,26 +34,20 @@ async def auto_analysis(app):
     while True:
         for symbol in config.symbols:
             result = analyzer.analyze_symbol(symbol)
-            if "Покупка" in result or "Продаж" in result:
-                try:
-                    await app.bot.send_message(
-                        chat_id=config.CHAT_ID,
-                        text=f"📊 Сигнал по {symbol}:\n{result}"
-                    )
-                except Exception as e:
-                    print(f"❌ Error sending message: {e}")
+            try:
+                await app.bot.send_message(chat_id=config.NOTIFY_CHAT_ID, text=f"🔔 Сигнал {symbol}:\n{result}")
+            except Exception as e:
+                print(f"❗ Error sending auto message: {e}")
         await asyncio.sleep(config.ANALYSIS_INTERVAL_MINUTES * 60)
 
 
 async def main():
     app = ApplicationBuilder().token(config.BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(signal))
 
-    # Запускаємо автоперевірку монет у фоновому режимі
-    app.job_queue.run_once(lambda _: asyncio.create_task(auto_analysis(app)), 1)
-
-    print("✅ Бот запущено")
+    asyncio.create_task(auto_analysis(app))
     await app.run_polling()
 
 
