@@ -38,7 +38,7 @@ async def set_interval(update, context):
         await update.message.reply_text("❌ Невірний формат. Приклад: /set_interval 60")
 
 import os
-
+from telegram.ext import ApplicationBuilder, CommandHandler
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
 app_bot = ApplicationBuilder().token(TOKEN).build()
