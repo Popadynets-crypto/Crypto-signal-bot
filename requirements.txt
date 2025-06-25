@@ -1,4 +1,4 @@
-
-python-telegram-bot==20.3
-requests
-pandas
+python-telegram-bot==20.0
+pandas==2.2.2
+requests==2.31.0
+python-dotenv==1.0.1
